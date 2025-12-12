@@ -1,0 +1,7 @@
+{
+  "name": "BHOOMI: Voice-First AI Ecosystem",
+  "description": "A voice-first SaaS platform designed to bridge the digital divide for rural India using specialized AI agents for literacy, health, and wealth creation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

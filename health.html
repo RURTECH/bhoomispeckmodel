@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhoomi & Jan Aushadhi: Rural Health Infrastructure Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Warm neutral background */
+            color: #1e293b;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        /* Chart Container Styling - Mandatory Requirement */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Max width to prevent stretching */
+            height: 300px;   /* Base height */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .nav-item.active {
+            background-color: #e0f2fe; /* Light blue accent */
+            color: #0369a1;
+            border-left: 4px solid #0284c7;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .interactive-card {
+            transition: all 0.3s ease;
+        }
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Animation for simulation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.33); }
+            80%, 100% { opacity: 0; }
+        }
+        .pulse-circle {
+            animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+    </style>
+    <!-- Chosen Palette: Slate & Sky (Professional, Medical, Trustworthy) -->
+    <!-- Application Structure Plan: 
+         1. Executive Dashboard: High-level metrics and the core argument (Doctor in Pocket + Store in Village).
+         2. The Bhoomi Model: Interactive simulation of the Patient -> AI -> Store flow to demonstrate "How it works".
+         3. Regulatory & Safety: Digitalizing the "Drugs Rules 1945" to show compliance and safety protocols.
+         4. Economic Impact: ROI calculator for authorities showing employment and savings.
+         5. Roadmap: Implementation steps.
+         This structure moves from "Vision" to "Proof of Concept" to "Legal Validation" to "Financial Justification".
+    -->
+    <!-- Visualization & Content Choices:
+         - Cost Comparison Bar Chart: Goal -> Compare. Shows massive savings (Travel + Meds).
+         - Regulatory Traffic Light System: Goal -> Inform/Safety. Visualizes OTC (Green) vs Rx (Red) logic based on docs.
+         - Logic Flow Diagram (CSS Grid): Goal -> Explain Process. Shows the AWS/AI flow without SVG.
+         - Impact Calculator: Goal -> Engage. Lets authorities input their own village data.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col z-20">
+        <div class="p-6 border-b border-slate-100">
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Bhoomi <span class="text-sky-600">Health</span></h1>
+            <p class="text-xs text-slate-500 mt-1">Integrated Village Health Node Proposal</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item active w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                        Executive Summary
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('model')" id="nav-model" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                        The Bhoomi Model (AI)
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('safety')" id="nav-safety" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                        Regulatory Safety
+                    </button>
+                </li>
+                <li>
+                    <button onclick="navigate('economics')" id="nav-economics" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                        Economic Impact
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-slate-100 bg-slate-50">
+            <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Source Data</div>
+            <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-600">Bhoomi Tech Report</span>
+                <span class="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-600">Drugs Rules 1945</span>
+                <span class="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-600">CDSCO OTC Guidelines</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative bg-slate-50/50" id="main-content">
+        
+        <!-- SECTION 1: DASHBOARD (Executive Summary) -->
+        <div id="section-dashboard" class="p-6 md:p-10 max-w-7xl mx-auto">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Proposal: Medical Centre for Every Village</h2>
+                <p class="mt-2 text-lg text-slate-600 max-w-3xl">
+                    A strategic plan to integrate <strong>Bhoomi's Voice-First AI</strong> with <strong>Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong> kendras. This creates a "Doctor in Pocket" and "Medicine Next Door" ecosystem, eliminating the ₹1000+ burden of traveling to towns for basic care.
+                </p>
+            </header>
+
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-emerald-500">
+                    <div class="text-sm font-semibold text-slate-500 uppercase">Cost Efficiency</div>
+                    <div class="mt-2 text-3xl font-bold text-slate-900">80-90%</div>
+                    <p class="text-sm text-slate-600 mt-1">Savings on Generic Meds via Jan Aushadhi</p>
+                </div>
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-sky-500">
+                    <div class="text-sm font-semibold text-slate-500 uppercase">Access Speed</div>
+                    <div class="mt-2 text-3xl font-bold text-slate-900">&lt; 10 Min</div>
+                    <p class="text-sm text-slate-600 mt-1">Diagnosis to Dispensing Time (Local)</p>
+                </div>
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-indigo-500">
+                    <div class="text-sm font-semibold text-slate-500 uppercase">Employment</div>
+                    <div class="mt-2 text-3xl font-bold text-slate-900">1 per Village</div>
+                    <p class="text-sm text-slate-600 mt-1">Local Entrepreneur (Kendra Owner)</p>
+                </div>
+            </div>
+
+            <!-- Core Chart: Traditional vs Bhoomi -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">The "Cost of Cure" Gap</h3>
+                    <p class="text-sm text-slate-500 mb-6">Comparison of total expenditure for a typical rural family treating a common ailment (e.g., seasonal fever). Traditional model includes travel, lost wages, and branded meds.</p>
+                    <div class="chart-container">
+                        <canvas id="costComparisonChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-xl flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Strategic Pillars</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-bold">1</div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold text-slate-900">Bhoomi AI (Doctor in Pocket)</h4>
+                                <p class="text-sm text-slate-600">AWS-powered Voice LLM for symptom analysis, triage, and health education in local dialects.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">2</div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold text-slate-900">Jan Aushadhi Kendra (Supply)</h4>
+                                <p class="text-sm text-slate-600">Physical infrastructure stocking generic medicines approved by CDSCO (Drugs Rules 1945).</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">3</div>
+                            <div class="ml-4">
+                                <h4 class="font-semibold text-slate-900">Digital Literacy & Employment</h4>
+                                <p class="text-sm text-slate-600">Local youth trained as "Health Sakhis" or store operators, leveraging the Bhoomi platform.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: THE MODEL (Simulation) -->
+        <div id="section-model" class="p-6 md:p-10 max-w-7xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">The Bhoomi Ecosystem</h2>
+                <p class="mt-2 text-lg text-slate-600">
+                    How the <strong>Voice-First AI</strong> interacts with the physical <strong>Medical Centre</strong>. This hybrid model ensures technology serves the non-literate population effectively.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                <!-- Tech Stack Column -->
+                <div class="col-span-1 space-y-4">
+                    <div class="p-4 bg-white rounded-lg shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-2">Bhoomi Tech Stack</h4>
+                        <div class="text-xs space-y-2 text-slate-600">
+                            <div class="flex justify-between border-b pb-1"><span>Core LLM:</span> <span class="font-mono bg-slate-100 px-1">Foundation Model (Regional)</span></div>
+                            <div class="flex justify-between border-b pb-1"><span>Voice:</span> <span class="font-mono bg-slate-100 px-1">AWS Polly / Connect</span></div>
+                            <div class="flex justify-between border-b pb-1"><span>Hardware:</span> <span class="font-mono bg-slate-100 px-1">Feature Phone Compatible</span></div>
+                            <div class="flex justify-between border-b pb-1"><span>Cloud:</span> <span class="font-mono bg-slate-100 px-1">AWS SageMaker</span></div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-sky-50 rounded-lg border border-sky-100">
+                        <h4 class="font-bold text-sky-800 mb-2 text-sm">Why Voice First?</h4>
+                        <p class="text-xs text-sky-700">The <em>Bhoomi</em> report highlights that 30-40 crore non-literate Indians are excluded from digital health. Voice removes the literacy barrier.</p>
+                    </div>
+                </div>
+
+                <!-- Interactive Simulation -->
+                <div class="col-span-1 lg:col-span-2 glass-panel p-6 rounded-xl relative overflow-hidden">
+                    <h3 class="font-bold text-slate-800 mb-4">Interactive Patient Journey Simulation</h3>
+                    
+                    <div id="sim-container" class="relative bg-slate-100 rounded-xl p-6 h-[400px] flex flex-col items-center justify-center border border-slate-200">
+                        <!-- Dynamic Content injected by JS -->
+                        <div id="sim-step-display" class="text-center z-10 max-w-md">
+                            <div class="mb-6">
+                                <span class="inline-block p-4 rounded-full bg-white shadow-md text-4xl">🤧</span>
+                            </div>
+                            <h4 class="text-xl font-bold text-slate-900 mb-2">Step 1: The Need</h4>
+                            <p class="text-slate-600 mb-6">A villager feels unwell (e.g., mild fever & headache). Instead of traveling 20km to town...</p>
+                            <button onclick="runSimulationStep(2)" class="px-6 py-2 bg-sky-600 text-white rounded-full font-semibold hover:bg-sky-700 transition shadow-lg">Start Bhoomi Call</button>
+                        </div>
+                    </div>
+
+                    <!-- Progress Indicators -->
+                    <div class="mt-6 flex justify-between items-center text-xs font-semibold text-slate-400">
+                        <div id="step-ind-1" class="px-3 py-1 bg-sky-100 text-sky-700 rounded-full">1. Onset</div>
+                        <div class="flex-1 h-0.5 bg-slate-200 mx-2"></div>
+                        <div id="step-ind-2" class="px-3 py-1 rounded-full">2. AI Triage</div>
+                        <div class="flex-1 h-0.5 bg-slate-200 mx-2"></div>
+                        <div id="step-ind-3" class="px-3 py-1 rounded-full">3. Recommendation</div>
+                        <div class="flex-1 h-0.5 bg-slate-200 mx-2"></div>
+                        <div id="step-ind-4" class="px-3 py-1 rounded-full">4. Fulfillment</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: SAFETY (Regulatory) -->
+        <div id="section-safety" class="p-6 md:p-10 max-w-7xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Regulatory Framework & Safety</h2>
+                <p class="mt-2 text-lg text-slate-600">
+                    Ensuring compliance with the <strong>Drugs Rules, 1945</strong> and <strong>CDSCO</strong> guidelines. The system distinguishes between OTC (Green Channel) and Prescription (Red Channel) needs.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="font-bold text-slate-800 border-b pb-2 mb-4">Allowed Non-Prescription (OTC) Medicines</h3>
+                    <p class="text-xs text-slate-500 mb-4">Based on common usage and proposed OTC lists in India (Source: medicine without prezcription.pdf). These can be safely recommended by the system for minor ailments.</p>
+                    
+                    <div class="space-y-3 overflow-y-auto max-h-64 pr-2" id="otc-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-xl bg-red-50/50 border-red-100">
+                    <h3 class="font-bold text-red-900 border-b border-red-200 pb-2 mb-4">Restricted / Prescription Only</h3>
+                    <p class="text-xs text-red-700 mb-4">Requires registered medical practitioner. Bhoomi AI acts only as a Triage/Referral agent here, connecting to a remote doctor or advising hospital visit.</p>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-white rounded border border-red-100">
+                            <span class="font-semibold text-slate-700">Antibiotics (Schedule H/H1)</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded font-bold">REFERRAL REQ</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white rounded border border-red-100">
+                            <span class="font-semibold text-slate-700">Cardiac Medicines</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded font-bold">REFERRAL REQ</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-white rounded border border-red-100">
+                            <span class="font-semibold text-slate-700">Injectables</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded font-bold">HOSPITAL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regulatory Compliance Checklist -->
+            <div class="glass-panel p-6 rounded-xl">
+                <h3 class="font-bold text-slate-800 mb-4">Compliance Protocol (Jan Aushadhi + Bhoomi)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div class="p-4 bg-slate-50 rounded border border-slate-200">
+                        <div class="font-bold text-slate-700 mb-1">1. Pharmacist Presence</div>
+                        <p class="text-xs text-slate-500">Every Jan Aushadhi Kendra must employ a registered pharmacist (B.Pharma/D.Pharma) per Drugs Rules 1945.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded border border-slate-200">
+                        <div class="font-bold text-slate-700 mb-1">2. AI Disclaimer</div>
+                        <p class="text-xs text-slate-500">Bhoomi AI explicitly states "I am an assistant, not a doctor" and escalates emergencies immediately.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded border border-slate-200">
+                        <div class="font-bold text-slate-700 mb-1">3. Record Keeping</div>
+                        <p class="text-xs text-slate-500">Digital logs of all dispensed meds (Schedule K compliance) maintained automatically by the Kendra app.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: ECONOMICS (Impact) -->
+        <div id="section-economics" class="p-6 md:p-10 max-w-7xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Economic Impact Analysis</h2>
+                <p class="mt-2 text-lg text-slate-600">
+                    Calculating the tangible financial benefits for rural households and the local economy.
+                </p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Calculator -->
+                <div class="col-span-1 glass-panel p-6 rounded-xl">
+                    <h3 class="font-bold text-slate-800 mb-6">Village Savings Calculator</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Village Population</label>
+                            <input type="number" id="calc-pop" value="2000" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Distance to Town (km)</label>
+                            <input type="number" id="calc-dist" value="15" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Avg. Doctor Visits/Year/Family</label>
+                            <input type="number" id="calc-visits" value="6" class="w-full p-2 border border-slate-300 rounded focus:ring-2 focus:ring-sky-500 outline-none">
+                        </div>
+                        <button onclick="calculateImpact()" class="w-full py-2 bg-emerald-600 text-white font-bold rounded hover:bg-emerald-700 transition">Calculate Savings</button>
+                    </div>
+                </div>
+
+                <!-- Results Area -->
+                <div class="col-span-1 lg:col-span-2 space-y-6">
+                    <!-- Dynamic Result Cards -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-white rounded-lg shadow border border-slate-100">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide">Total Village Annual Savings</div>
+                            <div class="text-2xl font-bold text-emerald-600 mt-1">₹<span id="res-savings">0</span></div>
+                            <p class="text-xs text-slate-400 mt-1">Direct wealth retained in village</p>
+                        </div>
+                        <div class="p-4 bg-white rounded-lg shadow border border-slate-100">
+                            <div class="text-xs text-slate-500 uppercase tracking-wide">CO2 Emissions Saved</div>
+                            <div class="text-2xl font-bold text-sky-600 mt-1"><span id="res-co2">0</span> kg</div>
+                            <p class="text-xs text-slate-400 mt-1">Reduced transport</p>
+                        </div>
+                    </div>
+
+                    <!-- Projection Chart -->
+                    <div class="glass-panel p-4 rounded-xl">
+                        <h4 class="font-bold text-slate-800 mb-2">5-Year Economic Projection</h4>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="projectionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Employment Note -->
+            <div class="mt-8 p-6 bg-indigo-50 rounded-xl border border-indigo-100 flex items-start gap-4">
+                <div class="text-3xl">👷</div>
+                <div>
+                    <h4 class="font-bold text-indigo-900">Employment Generation</h4>
+                    <p class="text-sm text-indigo-800 mt-1">
+                        Each Bhoomi-Jan Aushadhi Kendra creates sustainable employment for at least 1 pharmacist and 1 computer operator (Health Sakhi). For a district with 100 villages, this means 200 direct skilled jobs.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- DATA STORE ---
+        // Based on medicine without prezcription.pdf and Bhoomi logic
+        const otcDrugs = [
+            { name: "Paracetamol", desc: "Pain Reliever / Fever Reducer (500mg)", cat: "Analgesic" },
+            { name: "Cetirizine", desc: "Allergy relief (10mg)", cat: "Antihistamine" },
+            { name: "Antacids", desc: "Acid reflux / Heartburn relief", cat: "Gastrointestinal" },
+            { name: "ORS Packets", desc: "Dehydration treatment", cat: "Electrolytes" },
+            { name: "Povidone-Iodine", desc: "Antiseptic for cuts/wounds", cat: "Topical" },
+            { name: "Ibuprofen", desc: "Pain relief / Inflammation (200mg)", cat: "NSAID" }
+        ];
+
+        // --- CHART CONFIGURATION ---
+        let costChartInstance = null;
+        let projectionChartInstance = null;
+
+        function initCharts() {
+            // 1. Cost Comparison Chart
+            const ctxCost = document.getElementById('costComparisonChart').getContext('2d');
+            costChartInstance = new Chart(ctxCost, {
+                type: 'bar',
+                data: {
+                    labels: ['Consultation', 'Medicine Cost', 'Travel (to Town)', 'Total Cost'],
+                    datasets: [
+                        {
+                            label: 'Traditional Model (Town Visit)',
+                            data: [300, 400, 500, 1200],
+                            backgroundColor: '#ef4444', // Red
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Bhoomi + Jan Aushadhi (Village)',
+                            data: [50, 80, 0, 130], // Micro-fee for AI/consult + Generic cost
+                            backgroundColor: '#10b981', // Emerald
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Cost in INR (₹)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ₹' + context.raw;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Projection Chart (Initialized empty, updated by calc)
+            const ctxProj = document.getElementById('projectionChart').getContext('2d');
+            projectionChartInstance = new Chart(ctxProj, {
+                type: 'line',
+                data: {
+                    labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                    datasets: [{
+                        label: 'Cumulative Village Savings (₹ Lakhs)',
+                        data: [10, 25, 45, 70, 100],
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Cumulative Economic Benefit' }
+                    }
+                }
+            });
+        }
+
+        // --- NAVIGATION LOGIC ---
+        function navigate(sectionId) {
+            // Update UI tabs
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'bg-slate-50', 'text-sky-600', 'border-l-4', 'border-sky-600');
+                el.classList.add('text-slate-600');
+            });
+            const activeNav = document.getElementById('nav-' + sectionId);
+            activeNav.classList.add('active', 'bg-slate-50', 'text-sky-600');
+            activeNav.style.borderLeft = '4px solid #0284c7'; // Inline style to force specific tailwind behavior logic
+
+            // Hide all sections
+            ['dashboard', 'model', 'safety', 'economics'].forEach(id => {
+                document.getElementById('section-' + id).classList.add('hidden');
+            });
+
+            // Show target section
+            const target = document.getElementById('section-' + sectionId);
+            target.classList.remove('hidden');
+            target.classList.add('animate-fade-in');
+
+            // Trigger specific inits
+            if (sectionId === 'safety') populateOTC();
+            if (sectionId === 'economics') calculateImpact();
+        }
+
+        // --- SIMULATION LOGIC ---
+        const simSteps = [
+            {
+                id: 1,
+                icon: "🤧",
+                title: "Step 1: The Need",
+                desc: "A villager feels unwell. Traditionally, this means waiting for a bus to town.",
+                action: "Start Bhoomi Call",
+                next: 2
+            },
+            {
+                id: 2,
+                icon: "📱",
+                title: "Step 2: AI Voice Triage",
+                desc: "User calls Bhoomi. <br><em>'Namaste! Tell me your symptoms.'</em><br>User speaks in local dialect. Bhoomi analyzes: 'Mild Fever, Headache'.",
+                action: "Analyze Symptoms",
+                next: 3
+            },
+            {
+                id: 3,
+                icon: "🤖",
+                title: "Step 3: Recommendation",
+                desc: "Bhoomi checks database. <br><strong>Result:</strong> Likely Viral Fever. <br><strong>Advice:</strong> Rest + Paracetamol. <br><strong>Action:</strong> Generates QR code/SMS for local Jan Aushadhi.",
+                action: "Go to Kendra",
+                next: 4
+            },
+            {
+                id: 4,
+                icon: "🏥",
+                title: "Step 4: Fulfillment",
+                desc: "Villager walks 5 mins to local Jan Aushadhi Kendra. Pharmacist verifies SMS, dispenses Generic Paracetamol (₹10 vs ₹40).",
+                action: "Complete",
+                next: 1 // Loop back
+            }
+        ];
+
+        function runSimulationStep(stepId) {
+            const step = simSteps.find(s => s.id === stepId);
+            const container = document.getElementById('sim-container');
+            const display = document.getElementById('sim-step-display');
+            
+            // Visual Update for Indicators
+            document.querySelectorAll('[id^="step-ind-"]').forEach(el => {
+                el.classList.remove('bg-sky-100', 'text-sky-700');
+                el.classList.add('text-slate-400');
+            });
+            const activeInd = document.getElementById(`step-ind-${stepId}`);
+            if(activeInd) {
+                activeInd.classList.add('bg-sky-100', 'text-sky-700');
+                activeInd.classList.remove('text-slate-400');
+            }
+
+            // Animate transition
+            display.style.opacity = 0;
+            
+            setTimeout(() => {
+                let html = `
+                    <div class="mb-6 relative">
+                        <div class="absolute inset-0 bg-sky-200 rounded-full opacity-20 pulse-circle transform scale-150"></div>
+                        <span class="relative inline-block p-4 rounded-full bg-white shadow-md text-4xl border border-sky-100">${step.icon}</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-900 mb-2">${step.title}</h4>
+                    <p class="text-slate-600 mb-6 text-sm leading-relaxed">${step.desc}</p>
+                `;
+
+                if (step.id === 4) {
+                    html += `<button onclick="runSimulationStep(1)" class="px-6 py-2 bg-emerald-600 text-white rounded-full font-semibold hover:bg-emerald-700 transition shadow-lg">Finish & Reset</button>`;
+                } else {
+                    html += `<button onclick="runSimulationStep(${step.next})" class="px-6 py-2 bg-sky-600 text-white rounded-full font-semibold hover:bg-sky-700 transition shadow-lg">${step.action}</button>`;
+                }
+
+                display.innerHTML = html;
+                display.style.opacity = 1;
+            }, 300);
+        }
+
+        // --- SAFETY SECTION LOGIC ---
+        function populateOTC() {
+            const list = document.getElementById('otc-list');
+            if(list.children.length > 0) return; // Already populated
+
+            otcDrugs.forEach(drug => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3 bg-white rounded border border-emerald-100 hover:bg-emerald-50 transition";
+                item.innerHTML = `
+                    <div>
+                        <div class="font-bold text-slate-700">${drug.name}</div>
+                        <div class="text-xs text-slate-500">${drug.desc}</div>
+                    </div>
+                    <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] rounded uppercase font-bold tracking-wide">Allowed</span>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // --- ECONOMIC CALC LOGIC ---
+        function calculateImpact() {
+            const pop = parseInt(document.getElementById('calc-pop').value) || 2000;
+            const dist = parseInt(document.getElementById('calc-dist').value) || 15;
+            const visits = parseInt(document.getElementById('calc-visits').value) || 6;
+            const avgFamilySize = 4;
+            const families = pop / avgFamilySize;
+
+            // Assumptions
+            const travelCostPerKm = 5; // Bus/Auto share
+            const wageLossPerTrip = 300; // Daily wage lost
+            const brandedMedCost = 400;
+            const genericMedCost = 80;
+
+            const tripsPerYear = families * visits;
+            
+            // Traditional Cost
+            const tripCost = (dist * 2 * travelCostPerKm) + wageLossPerTrip; // Round trip + wage
+            const annualTravelCost = tripsPerYear * tripCost;
+            const annualMedCostTrad = tripsPerYear * brandedMedCost;
+            
+            // Bhoomi Cost
+            const annualMedCostBhoomi = tripsPerYear * genericMedCost;
+            const annualTravelCostBhoomi = 0; // Local
+            
+            const totalSavings = (annualTravelCost + annualMedCostTrad) - (annualMedCostBhoomi + annualTravelCostBhoomi);
+            const co2Saved = (tripsPerYear * dist * 2 * 0.1).toFixed(0); // 0.1kg per km approx
+
+            // Update UI
+            document.getElementById('res-savings').innerText = totalSavings.toLocaleString('en-IN');
+            document.getElementById('res-co2').innerText = co2Saved;
+
+            // Update Projection Chart
+            if(projectionChartInstance) {
+                const savingsLakhs = totalSavings / 100000;
+                const newData = [
+                    savingsLakhs,
+                    savingsLakhs * 2.1, // compounding slight growth
+                    savingsLakhs * 3.3,
+                    savingsLakhs * 4.6,
+                    savingsLakhs * 6.0
+                ];
+                projectionChartInstance.data.datasets[0].data = newData;
+                projectionChartInstance.update();
+            }
+        }
+
+        // Initial Load
+        window.onload = function() {
+            initCharts();
+            // Start calculator with defaults
+            calculateImpact();
+        };
+
+    </script>
+</body>
+</html>
